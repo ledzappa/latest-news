@@ -1,0 +1,24 @@
+{
+  "name": "latest-news",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ledzappa/latest-news.git"
+  },
+  "author": "Mikael Juntti",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ledzappa/latest-news/issues"
+  },
+  "homepage": "https://github.com/ledzappa/latest-news#readme",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "express": "^4.17.1",
+    "rss-parser": "^3.9.0"
+  }
+}
