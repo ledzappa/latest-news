@@ -2,37 +2,40 @@ const express = require("express");
 const Parser = require("rss-parser");
 const parser = new Parser();
 const app = express();
-const urls = [
-  "http://www.svt.se/nyheter/rss.xml",
-  "https://rss.aftonbladet.se/rss2/small/pages/sections/aftonbladet/",
-  "https://feeds.expressen.se/nyheter/",
+const sources = [
+  {
+    name: "aftonbladet",
+    url: "https://rss.aftonbladet.se/rss2/small/pages/sections/aftonbladet/",
+  },
+  { name: "svt", url: "http://www.svt.se/nyheter/rss.xml" },
+  { name: "expressen", url: "https://feeds.expressen.se/nyheter/" },
+  { name: "DN", url: "http://www.dn.se/nyheter/m/rss/" },
 ];
 
 app.get("/news", (req, res) => {
   let feeds = [];
   let counter = 0;
-  urls.forEach((url) => {
+  sources.forEach((source) => {
     parser
-      .parseURL(url)
+      .parseURL(source.url)
       .then((item) => {
-        feeds.push(...item.items);
+        const items = item.items.map((item) => ({
+          ...item,
+          source: source.name,
+        }));
+        feeds.push(...items);
         counter++;
-        if (counter === urls.length) {
-          // remove duplicates
-          feeds = feeds.filter(
-            (v, i, a) => a.findIndex((t) => t.pubDate === v.pubDate) === i
-          );
-          // sort
-          feeds = feeds.sort(
-            (a, b) => new Date(b.pubDate) - new Date(a.pubDate)
-          );
-          // output
-          feeds =
-            "<ul>" +
-            feeds
-              .map((feed) => "<li>" + feed.title + "-" + feed.pubDate + "</li>")
-              .join("") +
-            "</ul>";
+
+        if (counter === sources.length) {
+          // remove duplicates and sort
+          feeds = feeds
+            .filter(
+              (v, i, a) => a.findIndex((t) => t.pubDate === v.pubDate) === i
+            )
+            .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.setHeader("Access-Control-Allow-Credentials", "true");
+
           res.send(feeds);
         }
       })
@@ -40,6 +43,6 @@ app.get("/news", (req, res) => {
   });
 });
 
-app.listen(3000, function () {
-  console.log("Example app listening on port 3000!");
+app.listen(4000, function () {
+  console.log("Example app listening on port 4000!");
 });
