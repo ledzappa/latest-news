@@ -3,14 +3,18 @@ const Parser = require("rss-parser");
 const parser = new Parser();
 const app = express();
 const sources = [
+  { name: "svt", url: "http://www.svt.se/nyheter/rss.xml" },
   {
     name: "aftonbladet",
     url: "https://rss.aftonbladet.se/rss2/small/pages/sections/aftonbladet/",
   },
-  { name: "svt", url: "http://www.svt.se/nyheter/rss.xml" },
   { name: "expressen", url: "https://feeds.expressen.se/nyheter/" },
   { name: "DN", url: "http://www.dn.se/nyheter/m/rss/" },
 ];
+
+const removeImages = (content) => {
+  return content.replace(/<img.*?src="(.*?)"[^\>]+>/g, "");
+};
 
 app.get("/news", (req, res) => {
   let feeds = [];
@@ -21,6 +25,7 @@ app.get("/news", (req, res) => {
       .then((item) => {
         const items = item.items.map((item) => ({
           ...item,
+          content: source.name !== "aftonbladet" ? removeImages(item.content) : item.content,
           source: source.name,
         }));
         feeds.push(...items);
@@ -33,8 +38,6 @@ app.get("/news", (req, res) => {
               (v, i, a) => a.findIndex((t) => t.pubDate === v.pubDate) === i
             )
             .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-          res.setHeader("Access-Control-Allow-Origin", "*");
-          res.setHeader("Access-Control-Allow-Credentials", "true");
 
           res.send(feeds);
         }
